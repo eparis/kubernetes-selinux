@@ -4,18 +4,28 @@
 %define interface_dir	%{_datadir}/selinux/devel/include/contrib
 %define policy_dir	%{_datadir}/selinux/packages
 
-# We do this in post install and post uninstall phases
-%define relabel_files() \
-	restorecon -R /usr/bin/kube-apiserver; \
-	restorecon -R /usr/bin/kubelet; \
+%define relabel_kube_files() \
 	restorecon -R /usr/bin/kube-apiserver; \
 	restorecon -R /usr/bin/kube-controller-manager; \
+	restorecon -R /usr/bin/kube-scheduler; \
+	restorecon -R /usr/bin/kubelet; \
 	restorecon -R /usr/bin/kube-proxy; \
 	restorecon -R /usr/lib/systemd/system/kube-apiserver.service; \
-	restorecon -R /usr/lib/systemd/system/kube-proxy.service; \
-	restorecon -R /usr/lib/systemd/system/kubelet.service; \
 	restorecon -R /usr/lib/systemd/system/kube-controller-manager.service; \
+	restorecon -R /usr/lib/systemd/system/kube-scheduler.service; \
+	restorecon -R /usr/lib/systemd/system/kubelet.service; \
+	restorecon -R /usr/lib/systemd/system/kube-proxy.service; \
 	restorecon -R /var/lib/kubelet; \
+
+%define relabel_etcd_files() \
+	restorecon -R /usr/bin/etcd; \
+	restorecon -R /usr/lib/systemd/system/etcd.service; \
+	restorecon -R /var/lib/etcd;
+
+# We do this in post install and post uninstall phases
+%define relabel_files() \
+	%relabel_kube_files \
+	%relabel_etcd_files
 
 # Version of SELinux we were using
 %define selinux_policyver 3.13.1-72.fc21
@@ -78,10 +88,16 @@ for modulename in %{modulenames}; do
     %{_sbindir}/semodule -n -s %{selinuxtype} -i %{policy_dir}/${modulename}.pp
 done
 
+semanage port -n -m -t kubernetes_port_t -p tcp -r s0 8080
+semanage port -n -m -t kubernetes_port_t -p tcp -r s0 10250-10252
+semanage port -n -m -t kubernetes_port_t -p tcp -r s0 4001 #should be etcd_port_t
+semanage port -n -m -t kubernetes_port_t -p tcp -r s0 7001 #should be etcd_port_t
+
 if %{_sbindir}/selinuxenabled ; then
 	%{_sbindir}/load_policy
 	%relabel_files
 fi
+
 
 %postun
 if [ $1 -eq 0 ]; then
