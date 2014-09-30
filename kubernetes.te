@@ -17,6 +17,11 @@ permissive kube_controller_manager_t;
 permissive kube_proxy_t;
 permissive kubelet_t;
 
+type kube_unit_file_t;
+systemd_unit_file(kube_unit_file_t)
+type kubelet_unit_file_t;
+systemd_unit_file(kubelet_unit_file_t)
+
 type kubelet_var_lib_t;
 files_type(kubelet_var_lib_t)
 

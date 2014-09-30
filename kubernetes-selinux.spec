@@ -75,7 +75,7 @@ done
 #
 
 for modulename in %{modulenames}; do
-    %{_sbindir}/semodule -n -s %{selinuxtype} -i %{policy_dir}/%{modulename}.pp
+    %{_sbindir}/semodule -n -s %{selinuxtype} -i %{policy_dir}/${modulename}.pp
 done
 
 if %{_sbindir}/selinuxenabled ; then

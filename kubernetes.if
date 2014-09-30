@@ -24,9 +24,6 @@ template(`kubernetes_domain_template',`
     type $1_t, kubernetes_domain;
     type $1_exec_t;
     init_daemon_domain($1_t, $1_exec_t)
-
-    type $1_unit_file_t;
-    systemd_unit_file($1_unit_file_t)
 ')
 
 ########################################
